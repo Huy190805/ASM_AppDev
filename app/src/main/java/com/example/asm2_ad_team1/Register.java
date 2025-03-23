@@ -34,7 +34,7 @@ public class Register extends AppCompatActivity {
 //    private FirebaseFirestore db;
 
     protected void onCreate(Bundle savedInstanceState) {
-
+        //
     }
 
 }
