@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:hint="Enter User Name"
 
-            android:id="@+id/userName"/>
+            android:id="@+id/res_username"/>
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -46,10 +46,11 @@
         >
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/res_email"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Email"
-            android:id="@+id/email"/>
+            android:layout_weight="1"
+            android:hint="Enter Email" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -60,16 +61,7 @@
         android:layout_marginEnd="10dp"
         app:startIconContentDescription="Test"
 
-        >
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter Age"
-            android:inputType="number"
-            android:id="@+id/age"/>
-
-    </com.google.android.material.textfield.TextInputLayout>
+        />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
@@ -82,13 +74,11 @@
         >
 
         <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/res_password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter Password"
-            android:inputType="textPassword"
-            android:id="@+id/password"/>
-
-
+            android:hint="Enter Password
+" />
     </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -119,6 +109,6 @@
         android:layout_gravity="center"
         android:layout_marginTop="20dp"
         android:text="Register"
-        android:id="@+id/btnRes"/>
+        android:id="@+id/res_btn"/>
 
 </LinearLayout>
