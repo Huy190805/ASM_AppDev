@@ -1,31 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
 
-    <androidx.viewpager.widget.ViewPager
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:id="@+id/viewpager">
-
-    </androidx.viewpager.widget.ViewPager>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/btnAddExpense"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/nav"
-        >
+        android:text="Thêm Chi Tiêu" />
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="308dp"
-            android:layout_height="52dp"
-            android:text="Welcome to App" />
-    </com.google.android.material.bottomnavigation.BottomNavigationView>
-
+    <Button
+        android:id="@+id/btnViewStatistics"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Xem Thống Kê"
+        android:layout_marginTop="10dp"/>
 </LinearLayout>
