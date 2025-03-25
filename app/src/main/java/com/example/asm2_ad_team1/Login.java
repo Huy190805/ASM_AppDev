@@ -96,6 +96,7 @@ public class Login extends AppCompatActivity {
 
                         // Proceed to MainActivity
                         Intent intent = new Intent(Login.this, MainActivity.class);
+                        intent.putExtra("username", username); // pass username
                         startActivity(intent);
                         finish();
                     } else {
@@ -113,6 +114,7 @@ public class Login extends AppCompatActivity {
                 Log.e("LoginError", "Database error: " + error.getMessage());
                 Toast.makeText(Login.this, "Database error. Please try again.", Toast.LENGTH_SHORT).show();
             }
+            //
         });
     }
 }
