@@ -1,31 +1,25 @@
 package com.example.asm2_ad_team1;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
-@Entity(tableName = "expenses")
-public class Expense {
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-    private String category;
+import java.io.Serializable;
+
+public class Expense implements Serializable {
+    private String id;
+    private String note;
     private double amount;
-    private String date;
 
-    public Expense(String category, double amount, String date) {
-        this.category = category;
+    public Expense() {}
+
+    public Expense(String id, String note, double amount) {
+        this.id = id;
+        this.note = note;
         this.amount = amount;
-        this.date = date;
     }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public Expense(String expenseId, int i, String string, String string1, String string2) {
+    }
 
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-
+    public String getId() { return id; }
+    public String getNote() { return note; }
     public double getAmount() { return amount; }
-    public void setAmount(double amount) { this.amount = amount; }
-
-    public String getDate() { return date; }
-    public void setDate(String date) { this.date = date; }
 }

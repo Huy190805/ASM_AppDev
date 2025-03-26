@@ -15,26 +15,13 @@
         android:theme="@style/Theme.Asm2_AD_Team1"
         tools:targetApi="31">
         <activity
-            android:name=".StatisticsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ExpenseDao"
-            android:exported="false" />
-        <activity
             android:name=".ExpenseActivity"
             android:exported="false" />
         <activity
-            android:name=".ExpenseDatabase"
-            android:exported="false" />
-        <activity
-            android:name=".ExpenseAdapter"
-            android:exported="false" />
-        <activity
-            android:name=".Expense"
-            android:exported="false" /> <!-- Declare MainActivity here -->
-        <activity
             android:name=".MainActivity"
             android:exported="false" /> <!-- Existing activities -->
+        <activity
+            android:name=".AddExpense" />
         <activity
             android:name=".Login"
             android:exported="true">

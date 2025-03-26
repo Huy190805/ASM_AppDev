@@ -6,33 +6,37 @@
     android:padding="16dp">
 
     <EditText
-        android:id="@+id/edtCategory"
+        android:id="@+id/amount"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Loại Chi Tiêu"
-        android:padding="12dp"
-        />
-
-    <EditText
-        android:id="@+id/edtAmount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Số Tiền"
+        android:hint="Enter amount"
         android:inputType="numberDecimal"
-        android:padding="12dp"/>
+        android:padding="16dp"/>
 
     <EditText
-        android:id="@+id/edtDate"
+        android:id="@+id/note"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Ngày"
+        android:hint="Enter note"
+        android:padding="16dp"/>
+
+    <EditText
+        android:id="@+id/date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter date"
         android:inputType="date"
-        android:padding="12dp" />
+        android:padding="16dp"/>
+
+    <Spinner
+        android:id="@+id/group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"/>
 
     <Button
-        android:id="@+id/btnSave"
-        android:layout_width="match_parent"
+        android:id="@+id/btnAddExpense"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Lưu Chi Tiêu"
-        android:layout_marginTop="10dp"/>
+        android:text="Add Expense" />
 </LinearLayout>

@@ -10,12 +10,12 @@
         android:id="@+id/btnAddExpense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Thêm Chi Tiêu" />
+        android:text="Expense Activity" />
 
     <Button
         android:id="@+id/btnViewStatistics"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Xem Thống Kê"
+        android:text="Statistics Activity"
         android:layout_marginTop="10dp"/>
 </LinearLayout>
