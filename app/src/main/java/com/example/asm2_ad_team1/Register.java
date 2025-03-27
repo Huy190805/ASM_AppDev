@@ -47,9 +47,9 @@ public class Register extends AppCompatActivity {
 
         // Register button
         res_btn.setOnClickListener(view -> {
-            String username = res_username.getText().toString().trim().toLowerCase(); // enforce lowercase
             String email = res_email.getText().toString().trim();
             String password = res_password.getText().toString().trim();
+            String username = res_username.getText().toString().trim().toLowerCase(); // enforce lowercase
 
             // Simple validation
             if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
@@ -70,7 +70,7 @@ public class Register extends AppCompatActivity {
                     if (snapshot.exists()) {
                         res_username.setError("Username already exists");
                     } else {
-                        Helper helperClass = new Helper(email, password, username);
+                        Helper helperClass = new Helper(username ,email, password );
                         reference.child(username).setValue(helperClass)
                                 .addOnCompleteListener(task -> {
                                     if (task.isSuccessful()) {
