@@ -70,7 +70,8 @@ public class Register extends AppCompatActivity {
                     if (snapshot.exists()) {
                         res_username.setError("Username already exists");
                     } else {
-                        Helper helperClass = new Helper(username ,email, password );
+                        Helper helperClass = new Helper(email, password, username);
+
                         reference.child(username).setValue(helperClass)
                                 .addOnCompleteListener(task -> {
                                     if (task.isSuccessful()) {
