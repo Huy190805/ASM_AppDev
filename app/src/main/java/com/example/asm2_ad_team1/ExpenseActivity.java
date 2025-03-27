@@ -2,8 +2,8 @@ package com.example.asm2_ad_team1;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -15,11 +15,11 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ public class ExpenseActivity extends AppCompatActivity {
     private ListView expenseListView;
     private TextView totalExpense;
     private Button btnAddExpense;
-    private FirebaseFirestore db;
+    private DatabaseReference dbRef;
     private FirebaseUser user;
     private List<Expense> expenseList;
     private ArrayAdapter<String> adapter;
@@ -46,7 +46,7 @@ public class ExpenseActivity extends AppCompatActivity {
         expenseListView = findViewById(R.id.expenseListView);
         totalExpense = findViewById(R.id.totalExpense);
         btnAddExpense = findViewById(R.id.btnAddExpense);
-        db = FirebaseFirestore.getInstance();
+        dbRef = FirebaseDatabase.getInstance().getReference("User");
         user = FirebaseAuth.getInstance().getCurrentUser();
 
         // Khởi tạo danh sách
@@ -75,23 +75,15 @@ public class ExpenseActivity extends AppCompatActivity {
     private void loadExpenses() {
         if (user == null) return;
 
-        CollectionReference expenseRef = db.collection("User").document(user.getUid()).collection("Expense");
-        expenseRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
+        dbRef.child(user.getUid()).child("Expense").addValueEventListener(new ValueEventListener() {
             @Override
-            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                if (error != null) {
-                    Toast.makeText(ExpenseActivity.this, "Failed to load expenses: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (value == null) return;
-
+            public void onDataChange(DataSnapshot snapshot) {
                 expenseList.clear();
                 expenseNames.clear();
                 double total = 0;
 
-                for (var doc : value.getDocuments()) {
-                    Expense expense = doc.toObject(Expense.class);
+                for (DataSnapshot doc : snapshot.getChildren()) {
+                    Expense expense = doc.getValue(Expense.class);
                     if (expense != null) {
                         expenseList.add(expense);
                         expenseNames.add(expense.getNote() + " - $" + expense.getAmount());
@@ -99,12 +91,17 @@ public class ExpenseActivity extends AppCompatActivity {
                     }
                 }
 
-                // Cập nhật giao diện trên luồng chính
+                // Cập nhật giao diện
                 double finalTotal = total;
                 runOnUiThread(() -> {
                     adapter.notifyDataSetChanged();
                     totalExpense.setText("Total Expense: $" + finalTotal);
                 });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Toast.makeText(ExpenseActivity.this, "Failed to load expenses: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -113,11 +110,9 @@ public class ExpenseActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK) {
-            // Kiểm tra requestCode để đảm bảo danh sách được cập nhật đúng cách
-            if (requestCode == ADD_EXPENSE_REQUEST || requestCode == EDIT_EXPENSE_REQUEST) {
-                loadExpenses(); // Làm mới danh sách khi quay lại từ màn hình thêm/sửa
-            }
+        if (requestCode == ADD_EXPENSE_REQUEST && resultCode == RESULT_OK) {
+            // Cập nhật danh sách ngay khi quay lại màn hình chính
+            loadExpenses();
         }
     }
 }

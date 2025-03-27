@@ -2,17 +2,20 @@ package com.example.asm2_ad_team1;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.UUID;
 
@@ -20,8 +23,10 @@ public class AddExpense extends AppCompatActivity {
     private EditText amount, note, date;
     private Spinner group;
     private Button addExpense;
-    private FirebaseFirestore db;
+    private DatabaseReference dbRef;
     private FirebaseUser user;
+
+    private static final String TAG = "AddExpense";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +39,7 @@ public class AddExpense extends AppCompatActivity {
         group = findViewById(R.id.group);
         addExpense = findViewById(R.id.btnAddExpense);
 
-        db = FirebaseFirestore.getInstance();
+        dbRef = FirebaseDatabase.getInstance().getReference("User");
         user = FirebaseAuth.getInstance().getCurrentUser();
 
         addExpense.setOnClickListener(new View.OnClickListener() {
@@ -43,7 +48,6 @@ public class AddExpense extends AppCompatActivity {
                 if (amount.getText().toString().isEmpty() ||
                         note.getText().toString().isEmpty() ||
                         date.getText().toString().isEmpty()) {
-
                     Toast.makeText(AddExpense.this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -51,27 +55,28 @@ public class AddExpense extends AppCompatActivity {
                 String expenseId = UUID.randomUUID().toString();
                 Expense newExpense = new Expense(
                         expenseId,
-                        Integer.parseInt(amount.getText().toString()),
-                        group.getSelectedItem().toString(),
                         note.getText().toString(),
+                        Integer.parseInt(amount.getText().toString()),
                         date.getText().toString()
                 );
 
-                // Thêm dữ liệu vào Firestore
-                db.collection("User").document(user.getUid())
-                        .collection("Expense").document(expenseId)
-                        .set(newExpense)
+                // Lưu dữ liệu vào Realtime Database
+                dbRef.child(user.getUid()).child("Expense").child(expenseId)
+                        .setValue(newExpense)
                         .addOnSuccessListener(aVoid -> {
                             Toast.makeText(AddExpense.this, "Expense added successfully!", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "Expense added: " + expenseId);
 
-                            // Trả kết quả về ExpenseActivity để cập nhật danh sách
+                            // Trả ID của expense về ExpenseActivity
                             Intent resultIntent = new Intent();
+                            resultIntent.putExtra("expenseId", expenseId);
                             setResult(RESULT_OK, resultIntent);
                             finish();
                         })
-                        .addOnFailureListener(e ->
-                                Toast.makeText(AddExpense.this, "Failed to add expense: " + e.getMessage(), Toast.LENGTH_SHORT).show()
-                        );
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(AddExpense.this, "Failed to add expense: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Log.e(TAG, "Error adding expense", e);
+                        });
             }
         });
     }
