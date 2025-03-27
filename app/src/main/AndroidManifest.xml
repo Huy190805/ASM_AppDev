@@ -18,24 +18,6 @@
             android:name=".BudgetSetting"
             android:exported="false" />
         <activity
-            android:name=".StatisticsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ExpenseDao"
-            android:exported="false" />
-        <activity
-            android:name=".ExpenseActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ExpenseDatabase"
-            android:exported="false" />
-        <activity
-            android:name=".ExpenseAdapter"
-            android:exported="false" />
-        <activity
-            android:name=".Expense"
-            android:exported="false" /> <!-- Declare MainActivity here -->
-        <activity
             android:name=".MainActivity"
             android:exported="false" /> <!-- Existing activities -->
         <activity

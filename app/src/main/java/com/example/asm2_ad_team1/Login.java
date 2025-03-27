@@ -107,6 +107,8 @@ public class Login extends AppCompatActivity {
                     login_username.setError("User does not exist");
                     login_username.requestFocus();
                 }
+                Log.d("LoginDebug", "Username: " + username);
+                Log.d("LoginDebug", "Snapshot exists: " + snapshot.exists());
             }
 
             @Override
@@ -114,6 +116,7 @@ public class Login extends AppCompatActivity {
                 Log.e("LoginError", "Database error: " + error.getMessage());
                 Toast.makeText(Login.this, "Database error. Please try again.", Toast.LENGTH_SHORT).show();
             }
+
             //
         });
     }

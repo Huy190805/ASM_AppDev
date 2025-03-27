@@ -1,15 +1,19 @@
 package com.example.asm2_ad_team1;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -24,17 +28,17 @@ import java.util.Map;
 public class BudgetSetting extends AppCompatActivity {
 
     private TextView tvMonthlyMoney, dateMonthlyFrom, dateMonthlyTo;
-    private Button btnUpdateMonthlyBudget;
-
+    private Button btnUpdateMonthlyBudget, btnAddCategory, btnEditCategory, btnDeleteCategory;
+    private LinearLayout categoryCardContainer;
     private DatabaseReference mDatabase;
     private String currentUsername;
+    private EditText edtName, edtAmount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_budget_setting); // Ensure this layout exists and has correct IDs
+        setContentView(R.layout.activity_budget_setting);
 
-        // Get username from Intent
         currentUsername = getIntent().getStringExtra("username");
         if (currentUsername == null || currentUsername.isEmpty()) {
             Toast.makeText(this, "User not found. Closing screen.", Toast.LENGTH_SHORT).show();
@@ -42,20 +46,31 @@ public class BudgetSetting extends AppCompatActivity {
             return;
         }
 
-        // Firebase reference
         mDatabase = FirebaseDatabase.getInstance().getReference("users");
 
-        // Bind views
         tvMonthlyMoney = findViewById(R.id.tv_monthly_money);
         dateMonthlyFrom = findViewById(R.id.date_monthly_from);
         dateMonthlyTo = findViewById(R.id.date_monthly_to);
         btnUpdateMonthlyBudget = findViewById(R.id.button);
+        btnAddCategory = findViewById(R.id.button2);
+        btnEditCategory = findViewById(R.id.button3);
+        btnDeleteCategory = findViewById(R.id.button4);
+        categoryCardContainer = findViewById(R.id.layoutCategories);
 
-        // Load budget info
         loadMonthlyBudget();
+        loadCategories();
 
-        // Button: show dialog
         btnUpdateMonthlyBudget.setOnClickListener(v -> showBudgetUpdateDialog());
+
+        btnAddCategory.setOnClickListener(v -> showAddCategoryDialog(categoryCardContainer));
+
+        btnEditCategory.setOnClickListener(v -> {
+            showEditCategoryDialog();
+        });
+
+        btnDeleteCategory.setOnClickListener(v -> {
+            showDeleteCategoryDialog();
+        });
     }
 
     private void loadMonthlyBudget() {
@@ -83,6 +98,27 @@ public class BudgetSetting extends AppCompatActivity {
         });
     }
 
+    private void loadCategories() {
+        DatabaseReference catRef = mDatabase.child(currentUsername).child("categories");
+        catRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot category : snapshot.getChildren()) {
+                    String name = category.getKey();
+                    Integer amount = category.child("amount").getValue(Integer.class);
+                    if (name != null && amount != null) {
+                        addCategoryCard(categoryCardContainer, name, amount);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(BudgetSetting.this, "Failed to load categories", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void showBudgetUpdateDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_update_budget, null);
 
@@ -93,7 +129,7 @@ public class BudgetSetting extends AppCompatActivity {
         inputFrom.setOnClickListener(v -> showDatePicker(inputFrom));
         inputTo.setOnClickListener(v -> showDatePicker(inputTo));
 
-        new android.app.AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
                 .setTitle("Update Monthly Budget")
                 .setView(dialogView)
                 .setPositiveButton("Update", (dialog, which) -> {
@@ -147,4 +183,130 @@ public class BudgetSetting extends AppCompatActivity {
                     }
                 });
     }
+
+    private void showAddCategoryDialog(LinearLayout categoryCardContainer) {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category, null);
+        edtName = dialogView.findViewById(R.id.input_category_name);
+        edtAmount = dialogView.findViewById(R.id.input_category_amount);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Add Category")
+                .setView(dialogView)
+                .setPositiveButton("Add", (dialog, which) -> {
+                    String name = edtName.getText().toString().trim();
+                    String amountStr = edtAmount.getText().toString().trim();
+
+                    if (name.isEmpty() || amountStr.isEmpty()) {
+                        Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int amount = Integer.parseInt(amountStr);
+
+                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(name.toLowerCase());
+                    ref.child("amount").setValue(amount);
+
+                    addCategoryCard(categoryCardContainer, name, amount);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void addCategoryCard(LinearLayout layout, String name, int amount) {
+        CardView card = new CardView(this);
+        card.setCardElevation(4);
+        card.setRadius(12);
+        card.setUseCompatPadding(true);
+
+        LinearLayout inner = new LinearLayout(this);
+        inner.setOrientation(LinearLayout.VERTICAL);
+        inner.setPadding(20, 20, 20, 20);
+
+        TextView title = new TextView(this);
+        title.setText(name);
+        title.setTextSize(20);
+
+        TextView money = new TextView(this);
+        money.setText("Amount: " + amount + " VND");
+
+        inner.addView(title);
+        inner.addView(money);
+        card.addView(inner);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.setMargins(20, 20, 20, 20);
+
+        layout.addView(card, 0, params);
+    }
+
+    private void showEditCategoryDialog() {
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category, null);
+        EditText inputName = dialogView.findViewById(R.id.input_category_name);
+        EditText inputAmount = dialogView.findViewById(R.id.input_category_amount);
+
+        inputName.setHint("Category name to edit");
+        inputAmount.setHint("New amount");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Edit Category")
+                .setView(dialogView)
+                .setPositiveButton("Update", (dialog, which) -> {
+                    String name = inputName.getText().toString().trim().toLowerCase();
+                    String amountStr = inputAmount.getText().toString().trim();
+
+                    if (name.isEmpty() || amountStr.isEmpty()) {
+                        Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int newAmount = Integer.parseInt(amountStr);
+
+                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(name);
+                    ref.child("amount").setValue(newAmount).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(this, "Category updated!", Toast.LENGTH_SHORT).show();
+                            categoryCardContainer.removeAllViews();
+                            loadCategories(); // refresh all category cards
+                        } else {
+                            Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+    private void showDeleteCategoryDialog() {
+        EditText input = new EditText(this);
+        input.setHint("Category name to delete");
+
+        new AlertDialog.Builder(this)
+                .setTitle("Delete Category")
+                .setMessage("Enter the category name you want to delete:")
+                .setView(input)
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    String categoryName = input.getText().toString().trim().toLowerCase();
+
+                    if (categoryName.isEmpty()) {
+                        Toast.makeText(this, "Category name required", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(categoryName);
+                    ref.removeValue().addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(this, "Category deleted", Toast.LENGTH_SHORT).show();
+                            categoryCardContainer.removeAllViews();
+                            loadCategories(); // Refresh list
+                        } else {
+                            Toast.makeText(this, "Failed to delete category", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+
 }

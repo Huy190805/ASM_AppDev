@@ -10,16 +10,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class Register extends AppCompatActivity {
 
     EditText res_username, res_email, res_password;
     TextView routerLogin;
     Button res_btn;
+
     FirebaseDatabase database;
     DatabaseReference reference;
 
@@ -29,46 +34,74 @@ public class Register extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_register);
 
-        res_username = findViewById(R.id.res_username);   // ID from your register layout
-        res_email = findViewById(R.id.res_email);         // FIXED: email input ID
-        res_password = findViewById(R.id.res_password);   // FIXED: password input ID
+        // Bind views
+        res_username = findViewById(R.id.res_username);
+        res_email = findViewById(R.id.res_email);
+        res_password = findViewById(R.id.res_password);
         res_btn = findViewById(R.id.res_btn);
         routerLogin = findViewById(R.id.routeLogin);
 
-        res_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String username = res_username.getText().toString().trim();
-                String email = res_email.getText().toString().trim();
-                String password = res_password.getText().toString().trim();
+        // Firebase setup
+        database = FirebaseDatabase.getInstance();
+        reference = database.getReference("users");
 
-                if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                    Toast.makeText(Register.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
-                    return;
+        // Register button
+        res_btn.setOnClickListener(view -> {
+            String username = res_username.getText().toString().trim().toLowerCase(); // enforce lowercase
+            String email = res_email.getText().toString().trim();
+            String password = res_password.getText().toString().trim();
+
+            // Simple validation
+            if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(Register.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Optional: enforce format
+            if (!username.matches("^[a-z0-9_]+$")) {
+                res_username.setError("Username must be lowercase letters/numbers only");
+                return;
+            }
+
+            // Check if user already exists
+            reference.child(username).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (snapshot.exists()) {
+                        res_username.setError("Username already exists");
+                    } else {
+                        Helper helperClass = new Helper(email, password, username);
+                        reference.child(username).setValue(helperClass)
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        Toast.makeText(Register.this, "Registered successfully!", Toast.LENGTH_SHORT).show();
+                                        Log.d("Register", "User saved: " + username);
+
+                                        Intent intent = new Intent(Register.this, Login.class);
+                                        intent.putExtra("username", username);
+                                        startActivity(intent);
+                                        finish();
+                                    } else {
+                                        Toast.makeText(Register.this, "Registration failed: " + task.getException(), Toast.LENGTH_LONG).show();
+                                        Log.e("Register", "Save failed: ", task.getException());
+                                    }
+                                });
+                    }
                 }
 
-                database = FirebaseDatabase.getInstance();
-                reference = database.getReference("users");
-
-                Helper helperClass = new Helper(email, password, username );
-                reference.child(username).setValue(helperClass);
-
-                Toast.makeText(Register.this, "You have registered successfully", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(Register.this, Login.class);
-                startActivity(intent);
-                Log.d("Register", "User saved to Firebase: " + username);
-
-                finish();
-            }
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(Register.this, "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    Log.e("Register", "onCancelled: " + error.getMessage());
+                }
+            });
         });
 
-        routerLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Register.this, Login.class);
-                startActivity(intent);
-                finish();
-            }
+        // Go to login
+        routerLogin.setOnClickListener(view -> {
+            Intent intent = new Intent(Register.this, Login.class);
+            startActivity(intent);
+            finish();
         });
     }
 }
