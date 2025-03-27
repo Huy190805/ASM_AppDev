@@ -11,13 +11,23 @@ import androidx.appcompat.app.AppCompatActivity;
 public class MainActivity extends AppCompatActivity {
 
     private Button btnAddExpense, btnViewStatistics, btnBudgetSetting;
+    Button btnExpenseSetting;
     private String currentUsername;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // Make sure your layout file is named activity_main.xml
 
+        btnExpenseSetting.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, AddRecurringExpenseActivity.class);
+                startActivity(intent);
+            }
+        });
         // Get username passed from Login activity
         currentUsername = getIntent().getStringExtra("username");
 
