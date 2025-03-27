@@ -27,9 +27,10 @@ public class Helper {
         this.password = password;
     }
 
-    public Helper(String email, String username, String password) {
+    public Helper(String username , String email, String password) {
         this.email = email;
-        this.username = username;
         this.password = password;
+        this.username = username;
+
     }
 }
