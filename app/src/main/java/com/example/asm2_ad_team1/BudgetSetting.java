@@ -2,6 +2,7 @@ package com.example.asm2_ad_team1;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 public class BudgetSetting extends AppCompatActivity {
 
-    private TextView tvMonthlyMoney, dateMonthlyFrom, dateMonthlyTo;
+    private TextView tvMonthlyMoney, dateMonthlyFrom, dateMonthlyTo,btn_back;
     private Button btnUpdateMonthlyBudget, btnAddCategory, btnEditCategory, btnDeleteCategory;
     private LinearLayout categoryCardContainer;
     private DatabaseReference mDatabase;
@@ -56,6 +57,7 @@ public class BudgetSetting extends AppCompatActivity {
         btnEditCategory = findViewById(R.id.button3);
         btnDeleteCategory = findViewById(R.id.button4);
         categoryCardContainer = findViewById(R.id.layoutCategories);
+        btn_back = findViewById(R.id.btn_back);
 
         loadMonthlyBudget();
         loadCategories();
@@ -70,6 +72,13 @@ public class BudgetSetting extends AppCompatActivity {
 
         btnDeleteCategory.setOnClickListener(v -> {
             showDeleteCategoryDialog();
+        });
+
+        btn_back.setOnClickListener(view -> {
+            Intent intent = new Intent(BudgetSetting.this, MainActivity.class);
+            intent.putExtra("username", currentUsername); // 👈 pass username again
+            startActivity(intent);
+            finish();
         });
     }
 
