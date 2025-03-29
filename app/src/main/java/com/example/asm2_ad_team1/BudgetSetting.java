@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,17 +63,25 @@ public class BudgetSetting extends AppCompatActivity {
 
         loadMonthlyBudget();
         loadCategories();
+        checkCategoryVsBudget();
 
         btnUpdateMonthlyBudget.setOnClickListener(v -> showBudgetUpdateDialog());
 
-        btnAddCategory.setOnClickListener(v -> showAddCategoryDialog(categoryCardContainer));
+        btnAddCategory.setOnClickListener(v -> {
+            showAddCategoryDialog(categoryCardContainer);
+            checkCategoryVsBudget();
+
+        });
+
 
         btnEditCategory.setOnClickListener(v -> {
             showEditCategoryDialog();
+            checkCategoryVsBudget();
         });
 
         btnDeleteCategory.setOnClickListener(v -> {
             showDeleteCategoryDialog();
+            checkCategoryVsBudget();
         });
 
         btn_back.setOnClickListener(view -> {
@@ -195,30 +205,37 @@ public class BudgetSetting extends AppCompatActivity {
 
     private void showAddCategoryDialog(LinearLayout categoryCardContainer) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category, null);
-        edtName = dialogView.findViewById(R.id.input_category_name);
-        edtAmount = dialogView.findViewById(R.id.input_category_amount);
+        Spinner spinnerCategory = dialogView.findViewById(R.id.spinner_category);
+        EditText edtAmount = dialogView.findViewById(R.id.input_category_amount);
+
+        // Load categories from string-array
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.expense_categories, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(adapter);
 
         new AlertDialog.Builder(this)
                 .setTitle("Add Category")
                 .setView(dialogView)
                 .setPositiveButton("Add", (dialog, which) -> {
-                    String name = edtName.getText().toString().trim();
+                    String categoryName = spinnerCategory.getSelectedItem().toString();
                     String amountStr = edtAmount.getText().toString().trim();
 
-                    if (name.isEmpty() || amountStr.isEmpty()) {
+                    if (categoryName.isEmpty() || amountStr.isEmpty()) {
                         Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     int amount = Integer.parseInt(amountStr);
 
-                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(name.toLowerCase());
+                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(categoryName.toLowerCase());
                     ref.child("amount").setValue(amount);
 
-                    addCategoryCard(categoryCardContainer, name, amount);
+                    addCategoryCard(categoryCardContainer, categoryName, amount);
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+
     }
 
     private void addCategoryCard(LinearLayout layout, String name, int amount) {
@@ -232,7 +249,7 @@ public class BudgetSetting extends AppCompatActivity {
         inner.setPadding(20, 20, 20, 20);
 
         TextView title = new TextView(this);
-        title.setText(name);
+        title.setText(capitalizeFirstLetter(name)); // 👈 Capitalized
         title.setTextSize(20);
 
         TextView money = new TextView(this);
@@ -248,36 +265,45 @@ public class BudgetSetting extends AppCompatActivity {
         params.setMargins(20, 20, 20, 20);
 
         layout.addView(card, 0, params);
+
     }
+    private String capitalizeFirstLetter(String text) {
+        if (text == null || text.isEmpty()) return text;
+        return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
+    }
+
 
     private void showEditCategoryDialog() {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_category, null);
-        EditText inputName = dialogView.findViewById(R.id.input_category_name);
+        Spinner spinnerCategory = dialogView.findViewById(R.id.spinner_category);
         EditText inputAmount = dialogView.findViewById(R.id.input_category_amount);
 
-        inputName.setHint("Category name to edit");
-        inputAmount.setHint("New amount");
+        // Load predefined categories into spinner
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.expense_categories, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(adapter);
 
         new AlertDialog.Builder(this)
                 .setTitle("Edit Category")
                 .setView(dialogView)
                 .setPositiveButton("Update", (dialog, which) -> {
-                    String name = inputName.getText().toString().trim().toLowerCase();
+                    String selectedCategory = spinnerCategory.getSelectedItem().toString().toLowerCase();
                     String amountStr = inputAmount.getText().toString().trim();
 
-                    if (name.isEmpty() || amountStr.isEmpty()) {
-                        Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                    if (amountStr.isEmpty()) {
+                        Toast.makeText(this, "Please enter the new amount", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
                     int newAmount = Integer.parseInt(amountStr);
 
-                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(name);
+                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(selectedCategory);
                     ref.child("amount").setValue(newAmount).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Toast.makeText(this, "Category updated!", Toast.LENGTH_SHORT).show();
                             categoryCardContainer.removeAllViews();
-                            loadCategories(); // refresh all category cards
+                            loadCategories(); // refresh cards
                         } else {
                             Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show();
                         }
@@ -286,39 +312,75 @@ public class BudgetSetting extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
     private void showDeleteCategoryDialog() {
-        EditText input = new EditText(this);
-        input.setHint("Category name to delete");
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_delete_category, null);
+        Spinner spinnerCategory = dialogView.findViewById(R.id.spinner_category);
+
+        // Load categories from string-array (static list)
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
+                R.array.expense_categories, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(adapter);
 
         new AlertDialog.Builder(this)
                 .setTitle("Delete Category")
-                .setMessage("Enter the category name you want to delete:")
-                .setView(input)
+                .setView(dialogView)
                 .setPositiveButton("Delete", (dialog, which) -> {
-                    String categoryName = input.getText().toString().trim().toLowerCase();
+                    String selectedCategory = spinnerCategory.getSelectedItem().toString().toLowerCase();
 
-                    if (categoryName.isEmpty()) {
-                        Toast.makeText(this, "Category name required", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(categoryName);
+                    DatabaseReference ref = mDatabase.child(currentUsername).child("categories").child(selectedCategory);
                     ref.removeValue().addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             Toast.makeText(this, "Category deleted", Toast.LENGTH_SHORT).show();
                             categoryCardContainer.removeAllViews();
-                            loadCategories(); // Refresh list
+                            loadCategories(); // Refresh UI
                         } else {
                             Toast.makeText(this, "Failed to delete category", Toast.LENGTH_SHORT).show();
                         }
                     });
-
                 })
-                
-
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
+    private void checkCategoryVsBudget() {
+        DatabaseReference userRef = mDatabase.child(currentUsername);
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Integer monthlyBudget = 0;
+                int categoryTotal = 0;
+
+                // Get monthly budget
+                if (snapshot.child("MonthlyBudget").exists()) {
+                    monthlyBudget = snapshot.child("MonthlyBudget").child("amount").getValue(Integer.class);
+                }
+
+                // Sum all category amounts
+                if (snapshot.child("categories").exists()) {
+                    for (DataSnapshot category : snapshot.child("categories").getChildren()) {
+                        Integer amount = category.child("amount").getValue(Integer.class);
+                        if (amount != null) categoryTotal += amount;
+                    }
+                }
+
+                // Compare
+                if (monthlyBudget != null && categoryTotal > monthlyBudget) {
+                    Toast.makeText(BudgetSetting.this,
+                            "⚠️ Your total category budgets (" + categoryTotal + " VND) exceed your monthly budget (" + monthlyBudget + " VND)",
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(BudgetSetting.this, "Error checking budget: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
 
 
 }
