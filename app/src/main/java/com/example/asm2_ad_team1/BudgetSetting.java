@@ -312,7 +312,10 @@ public class BudgetSetting extends AppCompatActivity {
                             Toast.makeText(this, "Failed to delete category", Toast.LENGTH_SHORT).show();
                         }
                     });
+
                 })
+                
+
                 .setNegativeButton("Cancel", null)
                 .show();
     }
