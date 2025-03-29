@@ -90,7 +90,8 @@ public class Login extends AppCompatActivity {
                 if (snapshot.exists()) {
                     String passwordFromDB = snapshot.child("password").getValue(String.class);
 
-                    if (passwordFromDB != null && passwordFromDB.equals(userpassword)) {
+                    String hashedInputPassword = PasswordUtils.hashPassword(userpassword);
+                    if (passwordFromDB != null && passwordFromDB.equals(hashedInputPassword)){
                         // Login successful
                         Toast.makeText(Login.this, "Login successful!", Toast.LENGTH_SHORT).show();
 
