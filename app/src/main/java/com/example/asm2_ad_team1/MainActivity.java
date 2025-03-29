@@ -6,55 +6,78 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Button btnAddExpense, btnViewStatistics, btnBudgetSetting, btnLogout;
+    private DrawerLayout drawerLayout;
     private String currentUsername;
+
+    // Drawer menu buttons
+    private Button btnExpenseSetting, btnBudgetSetting, btnProfile, btnSettings, btnLogout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // Ensure this layout matches your file
+        setContentView(R.layout.activity_main); // ✅ Must match layout file
 
-        // Get username passed from Login activity
+        // Get username from login
         currentUsername = getIntent().getStringExtra("username");
-
         if (currentUsername == null || currentUsername.isEmpty()) {
-            Toast.makeText(this, "No user logged in. Returning to login.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "No user logged in. Redirecting to login.", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(MainActivity.this, Login.class));
             finish();
             return;
         }
 
-        // Bind buttons
-        btnAddExpense = findViewById(R.id.btnAddExpense);
-        btnViewStatistics = findViewById(R.id.btnViewStatistics);
-        btnBudgetSetting = findViewById(R.id.budgetSetting);
-        btnLogout = findViewById(R.id.btnLogout); // Make sure this exists in your layout
+        // Set up toolbar and drawer toggle
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        drawerLayout = findViewById(R.id.drawer_layout);
 
-        // Navigate to Budget Setting
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        // Drawer button bindings
+        btnExpenseSetting = findViewById(R.id.nav_btn_expense_setting);
+        btnBudgetSetting = findViewById(R.id.nav_btn_budget_setting);
+        btnProfile = findViewById(R.id.nav_btn_profile);
+        btnSettings = findViewById(R.id.nav_btn_settings);
+        btnLogout = findViewById(R.id.nav_btn_logout);
+
+        // Expense Setting → AddExpenseActivity
+//        btnExpenseSetting.setOnClickListener(view -> {
+//            Intent intent = new Intent(MainActivity.this, AddExpenseActivity.class);
+//            intent.putExtra("username", currentUsername);
+//            startActivity(intent);
+//        });
+
+        // Budget Setting → BudgetSetting activity
         btnBudgetSetting.setOnClickListener(view -> {
             Intent intent = new Intent(MainActivity.this, BudgetSetting.class);
             intent.putExtra("username", currentUsername);
             startActivity(intent);
         });
 
-        // Add Expense (Not implemented)
-        btnAddExpense.setOnClickListener(view ->
-                Toast.makeText(MainActivity.this, "Add Expense clicked (not implemented yet)", Toast.LENGTH_SHORT).show());
+        // Profile
+        btnProfile.setOnClickListener(view ->
+                Toast.makeText(MainActivity.this, "Profile clicked (not implemented)", Toast.LENGTH_SHORT).show());
 
-        // View Statistics (Not implemented)
-        btnViewStatistics.setOnClickListener(view ->
-                Toast.makeText(MainActivity.this, "View Statistics clicked (not implemented yet)", Toast.LENGTH_SHORT).show());
+        // Settings
+        btnSettings.setOnClickListener(view ->
+                Toast.makeText(MainActivity.this, "Settings clicked (not implemented)", Toast.LENGTH_SHORT).show());
 
-        // Optional: Logout button
+        // Logout
         btnLogout.setOnClickListener(view -> {
             Toast.makeText(MainActivity.this, "Logged out", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, Login.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // Clear back stack
-            startActivity(intent);
+            startActivity(new Intent(MainActivity.this, Login.class));
             finish();
         });
     }
