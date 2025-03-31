@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">Asm2_AD_Team1</string>
+
+    <string-array name="expense_categories">
+        <item>Food</item>
+        <item>Transport</item>
+
+        <item>Groceries</item>
+        <item>Study</item>
+        <item>Other</item>
+    </string-array>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+</resources>
