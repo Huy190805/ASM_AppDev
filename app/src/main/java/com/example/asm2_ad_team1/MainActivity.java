@@ -1,5 +1,6 @@
 package com.example.asm2_ad_team1;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -19,6 +20,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -92,11 +96,12 @@ public class MainActivity extends AppCompatActivity {
             startActivity(new Intent(MainActivity.this, Login.class));
             finish();
         });
+
+        Button btnReport = findViewById(R.id.btn_generate_report);
+        btnReport.setOnClickListener(v -> generateMonthlyComparison());
+
         loadExpenseOverview();
-
         RecurringExpenseManager.applyRecurringExpenses(currentUsername);
-
-
     }
     private void loadExpenseOverview() {
         DatabaseReference userRef = FirebaseDatabase.getInstance()
@@ -172,10 +177,84 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void generateMonthlyComparison() {
+        String thisMonth = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(new Date());
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MONTH, -1);
+        String lastMonth = new SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(cal.getTime());
+
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("users").child(currentUsername).child("expenses");
+
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int thisTotal = 0, lastTotal = 0;
+                Map<String, Integer> thisCat = new HashMap<>();
+                Map<String, Integer> lastCat = new HashMap<>();
+
+                for (DataSnapshot expense : snapshot.getChildren()) {
+                    String date = expense.child("date").getValue(String.class);
+                    String cat = expense.child("category").getValue(String.class);
+                    Integer amount = expense.child("amount").getValue(Integer.class);
+
+                    if (date != null && amount != null && cat != null) {
+                        cat = capitalize(cat);
+                        if (date.startsWith(thisMonth)) {
+                            thisTotal += amount;
+                            thisCat.put(cat, thisCat.getOrDefault(cat, 0) + amount);
+                        } else if (date.startsWith(lastMonth)) {
+                            lastTotal += amount;
+                            lastCat.put(cat, lastCat.getOrDefault(cat, 0) + amount);
+                        }
+                    }
+                }
+
+                StringBuilder msg = new StringBuilder();
+                msg.append("📅 Report:\n")
+                        .append("This month (").append(thisMonth).append("): ").append(thisTotal).append(" VND\n")
+                        .append("Last month (").append(lastMonth).append("): ").append(lastTotal).append(" VND\n\n");
+
+                msg.append("📊 This Month by Category:\n");
+                for (String cat : thisCat.keySet()) {
+                    msg.append("• ").append(cat).append(": ").append(thisCat.get(cat)).append(" VND\n");
+                }
+
+                msg.append("\n📊 Last Month by Category:\n");
+                for (String cat : lastCat.keySet()) {
+                    msg.append("• ").append(cat).append(": ").append(lastCat.get(cat)).append(" VND\n");
+                }
+
+                msg.append("\n");
+                float diff = thisTotal - lastTotal;
+                if (diff > 0) {
+                    msg.append("⬆ You spent ").append((int) diff).append(" VND more than last month.");
+                } else if (diff < 0) {
+                    msg.append("⬇ You spent ").append(Math.abs((int) diff)).append(" VND less than last month.");
+                } else {
+                    msg.append("You spent exactly the same as last month.");
+                }
+
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle("Monthly Comparison")
+                        .setMessage(msg.toString())
+                        .setPositiveButton("OK", null)
+                        .show();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(MainActivity.this, "Failed to load report", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private String capitalize(String text) {
         if (text == null || text.isEmpty()) return text;
         return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
     }
+
 
 }
 
