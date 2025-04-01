@@ -8,23 +8,23 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp"
+        android:padding="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <EditText
-            android:id="@+id/input_category_name"
+        <Spinner
+            android:id="@+id/spinner_category"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:hint="Category name" />
+            android:layout_marginBottom="12dp" />
 
         <EditText
             android:id="@+id/input_category_amount"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_marginTop="10dp"
             android:hint="Amount"
             android:inputType="number" />
     </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -79,13 +79,6 @@
                     android:text=".Register Here !"
                     android:textColor="#3949AB" />
 
-                <TextView
-                    android:id="@+id/routeFg"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginRight="10dp"
-                    android:text="Forgot Password" />
             </LinearLayout>
 
             <Button

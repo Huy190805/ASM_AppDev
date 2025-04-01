@@ -1,6 +1,8 @@
 package com.example.asm2_ad_team1;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,7 +11,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -17,7 +18,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 public class Login extends AppCompatActivity {
 
@@ -28,7 +28,6 @@ public class Login extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
         login_username = findViewById(R.id.login_username);
@@ -36,24 +35,30 @@ public class Login extends AppCompatActivity {
         routerRes = findViewById(R.id.routeRes);
         login_btn = findViewById(R.id.login_btn);
 
-        login_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (!validateUsername() | !validatePassword()) {
-                    // Don't proceed if input is invalid
-                } else {
-                    checkUser();
-                }
-            }
+        login_btn.setOnClickListener(view -> {
+            if (!validateUsername() | !validatePassword()) return;
+            checkUser(); // Try Firebase first
         });
 
-        routerRes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(Login.this, Register.class);
-                startActivity(intent);
-            }
+        routerRes.setOnClickListener(view -> {
+            startActivity(new Intent(Login.this, Register.class));
         });
+        printLocalUsers();
+
+
+    }
+
+    private void printLocalUsers() {
+        UserSQLiteHelper dbHelper = new UserSQLiteHelper(this);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        Cursor cursor = db.query(UserSQLiteHelper.TABLE_USERS, null, null, null, null, null, null);
+        while (cursor.moveToNext()) {
+            String user = cursor.getString(cursor.getColumnIndexOrThrow(UserSQLiteHelper.COL_USERNAME));
+            String email = cursor.getString(cursor.getColumnIndexOrThrow(UserSQLiteHelper.COL_EMAIL));
+            Log.d("SQLiteUser", "User: " + user + ", Email: " + email);
+        }
+        cursor.close();
     }
 
     public boolean validateUsername() {
@@ -79,45 +84,67 @@ public class Login extends AppCompatActivity {
     }
 
     public void checkUser() {
-        String username = login_username.getText().toString().trim().toLowerCase(); // force lowercase
+        String username = login_username.getText().toString().trim().toLowerCase();
         String userpassword = login_password.getText().toString().trim();
+        String hashedInputPassword = PasswordUtils.hashPassword(userpassword);
 
         DatabaseReference reference = FirebaseDatabase.getInstance().getReference("users");
 
-        reference.child(username).addListenerForSingleValueEvent(new ValueEventListener() {
+        reference.child(username).addListenerForSingleValueEvent(new com.google.firebase.database.ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     String passwordFromDB = snapshot.child("password").getValue(String.class);
-
-                    if (passwordFromDB != null && passwordFromDB.equals(userpassword)) {
-                        // Login successful
-                        Toast.makeText(Login.this, "Login successful!", Toast.LENGTH_SHORT).show();
-
-                        // Proceed to MainActivity
-                        Intent intent = new Intent(Login.this, MainActivity.class);
-                        intent.putExtra("username", username); // pass username
-                        startActivity(intent);
-                        finish();
+                    if (passwordFromDB != null && passwordFromDB.equals(hashedInputPassword)) {
+                        // Firebase login success
+                        Toast.makeText(Login.this, "Login successful (Firebase)", Toast.LENGTH_SHORT).show();
+                        proceedToMain(username);
                     } else {
                         login_password.setError("Invalid credentials");
                         login_password.requestFocus();
                     }
                 } else {
-                    login_username.setError("User does not exist");
-                    login_username.requestFocus();
+                    // Fallback to local SQLite check
+                    checkUserFromSQLite(username, hashedInputPassword);
                 }
-                Log.d("LoginDebug", "Username: " + username);
-                Log.d("LoginDebug", "Snapshot exists: " + snapshot.exists());
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("LoginError", "Database error: " + error.getMessage());
-                Toast.makeText(Login.this, "Database error. Please try again.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(Login.this, "Firebase error. Trying local login...", Toast.LENGTH_SHORT).show();
+                checkUserFromSQLite(username, hashedInputPassword);
             }
-
-            //
         });
+    }
+
+    public void checkUserFromSQLite(String username, String hashedPassword) {
+        UserSQLiteHelper dbHelper = new UserSQLiteHelper(Login.this);
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                UserSQLiteHelper.TABLE_USERS,
+                null,
+                UserSQLiteHelper.COL_USERNAME + "=? AND " + UserSQLiteHelper.COL_PASSWORD + "=?",
+                new String[]{username, hashedPassword},
+                null, null, null);
+
+        if (cursor.moveToFirst()) {
+            Toast.makeText(this, "Login successful (SQLite)", Toast.LENGTH_SHORT).show();
+            proceedToMain(username);
+        } else {
+            login_username.setError("User not found");
+            login_password.setError("Invalid login");
+            login_username.requestFocus();
+        }
+
+        cursor.close();
+    }
+
+    private void proceedToMain(String username) {
+        Intent intent = new Intent(Login.this, MainActivity.class);
+        intent.putExtra("username", username);
+        startActivity(intent);
+        finish();
     }
 }
