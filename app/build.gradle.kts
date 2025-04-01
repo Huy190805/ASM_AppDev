@@ -38,6 +38,7 @@ dependencies {
     implementation("com.google.firebase:firebase-database")
     implementation("com.google.firebase:firebase-analytics")
 
+    
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
