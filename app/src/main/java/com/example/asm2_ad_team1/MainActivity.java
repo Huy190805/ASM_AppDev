@@ -53,11 +53,11 @@ public class MainActivity extends AppCompatActivity {
         btnLogout = findViewById(R.id.nav_btn_logout);
 
         // Expense Setting → AddExpenseActivity
-//        btnExpenseSetting.setOnClickListener(view -> {
-//            Intent intent = new Intent(MainActivity.this, AddExpenseActivity.class);
-//            intent.putExtra("username", currentUsername);
-//            startActivity(intent);
-//        });
+        btnExpenseSetting.setOnClickListener(v -> {
+                Intent intent = new Intent(this, ExpenseSetting.class);
+                intent.putExtra("username", currentUsername);
+                startActivity(intent);
+            });
 
         // Budget Setting → BudgetSetting activity
         btnBudgetSetting.setOnClickListener(view -> {
