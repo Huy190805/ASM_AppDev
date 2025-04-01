@@ -17,7 +17,9 @@
         <activity
             android:name=".ExpenseSetting"
             android:exported="false" />
-
+        <activity
+            android:name=".AddExpenseActivity"
+            android:exported="false" />
         <activity
             android:name=".BudgetSetting"
             android:exported="false" />

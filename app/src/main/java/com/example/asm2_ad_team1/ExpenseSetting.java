@@ -227,6 +227,9 @@ public class ExpenseSetting extends AppCompatActivity {
     }
 
     private void loadExpenses() {
+        expenseContainer.removeAllViews();
+        expenseIdMap.clear();
+
         DatabaseReference expRef = mDatabase.child(currentUsername).child("expenses");
         expRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
