@@ -4,7 +4,10 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
+
 import android.os.Handler;
+
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +30,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+
 import java.util.Arrays;
+
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -37,7 +42,11 @@ import java.util.UUID;
 public class ExpenseSetting extends AppCompatActivity {
 
     private LinearLayout expenseContainer;
+
     private Button btnAddExpense, btnEditExpense, btnDeleteExpense, btnAddRecurringExpense;
+
+    private Button btnAddExpense, btnEditExpense, btnDeleteExpense;
+
     private TextView btnBack;
     private String currentUsername;
     private DatabaseReference mDatabase;
@@ -62,12 +71,17 @@ public class ExpenseSetting extends AppCompatActivity {
         btnEditExpense = findViewById(R.id.btn_edit_expense);
         btnDeleteExpense = findViewById(R.id.btn_delete_expense);
         btnBack = findViewById(R.id.btn_back);
+
         btnAddRecurringExpense = findViewById(R.id.btn_addrecurring_expense);
+
+
 
         btnAddExpense.setOnClickListener(v -> showAddExpenseDialog());
         btnEditExpense.setOnClickListener(v -> showEditExpenseDialog());
         btnDeleteExpense.setOnClickListener(v -> showDeleteExpenseDialog());
+
         btnAddRecurringExpense.setOnClickListener(view -> showAddRecurringExpenseDialog());
+
 
         btnBack.setOnClickListener(v -> {
             Intent intent = new Intent(ExpenseSetting.this, MainActivity.class);
@@ -191,6 +205,7 @@ public class ExpenseSetting extends AppCompatActivity {
     }
 
     private void showDeleteExpenseDialog() {
+
         View view = getLayoutInflater().inflate(R.layout.dialog_delete_expense, null);
         Spinner spinner = view.findViewById(R.id.spinner_delete_expense);
 
@@ -198,10 +213,17 @@ public class ExpenseSetting extends AppCompatActivity {
                 this,
                 android.R.layout.simple_spinner_item,
                 new ArrayList<>(expenseIdMap.keySet()));
+
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_delete_expense, null);
+        Spinner spinner = dialogView.findViewById(R.id.spinner_delete_expense);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>(expenseIdMap.keySet()));
+
         spinner.setAdapter(adapter);
 
         new AlertDialog.Builder(this)
                 .setTitle("Delete Expense")
+
                 .setView(view)
                 .setPositiveButton("Delete", (dialog, which) -> {
                     String selected = (String) spinner.getSelectedItem();
@@ -233,6 +255,20 @@ public class ExpenseSetting extends AppCompatActivity {
                                     .addOnSuccessListener(unused -> Toast.makeText(this, "Recurring rule removed", Toast.LENGTH_SHORT).show());
                         }
                     });
+
+                .setView(dialogView)
+                .setPositiveButton("Delete", (dialog, which) -> {
+                    String selected = (String) spinner.getSelectedItem();
+                    String expenseId = expenseIdMap.get(selected);
+                    if (expenseId == null) return;
+
+                    mDatabase.child(currentUsername).child("expenses").child(expenseId).removeValue()
+                            .addOnCompleteListener(t -> {
+                                Toast.makeText(this, "Expense deleted", Toast.LENGTH_SHORT).show();
+                                expenseContainer.removeAllViews();
+                                loadExpenses();
+                            });
+
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -320,6 +356,7 @@ public class ExpenseSetting extends AppCompatActivity {
         return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
     }
 
+
     private void showAddRecurringExpenseDialog() {
         View view = getLayoutInflater().inflate(R.layout.dialog_add_recurring_expense, null);
 
@@ -399,5 +436,6 @@ public class ExpenseSetting extends AppCompatActivity {
 
 
     }
+
 
 }
