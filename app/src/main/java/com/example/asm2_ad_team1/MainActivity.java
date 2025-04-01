@@ -93,6 +93,10 @@ public class MainActivity extends AppCompatActivity {
             finish();
         });
         loadExpenseOverview();
+
+        RecurringExpenseManager.applyRecurringExpenses(currentUsername);
+
+
     }
     private void loadExpenseOverview() {
         DatabaseReference userRef = FirebaseDatabase.getInstance()

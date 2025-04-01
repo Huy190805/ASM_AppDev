@@ -43,6 +43,12 @@
                 android:textStyle="bold" />
         </FrameLayout>
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
         <!-- Expense Cards Container -->
         <LinearLayout
             android:id="@+id/expenseContainer"
@@ -65,6 +71,9 @@
                 android:id="@+id/btn_add_expense"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+
+                android:layout_marginStart="8dp"
+
                 android:layout_weight="1"
                 android:text="Add Expense" />
 
@@ -76,6 +85,23 @@
                 android:layout_weight="1"
                 android:text="Edit Expense" />
 
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_addrecurring_expense"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="Add Recurring Expense" />
+
+
             <Button
                 android:id="@+id/btn_delete_expense"
                 android:layout_width="match_parent"
@@ -83,6 +109,27 @@
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
                 android:text="Delete Expense" />
+
+
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"></LinearLayout>
+
+        <!-- Expense Cards Container -->
+        <LinearLayout
+            android:id="@+id/expenseContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="10dp"
+            android:layout_marginHorizontal="10dp" />
+
+        <!-- Action Buttons -->
+
+        </LinearLayout>
+
     </LinearLayout>
 </ScrollView>
