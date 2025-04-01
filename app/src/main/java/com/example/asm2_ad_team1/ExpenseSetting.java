@@ -2,7 +2,12 @@ package com.example.asm2_ad_team1;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Build;
+import android.content.Intent;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
@@ -19,6 +24,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -77,6 +85,16 @@ public class ExpenseSetting extends AppCompatActivity {
         });
 
         loadExpenses();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "expense_alerts", "Expense Alerts", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Notifies when a category exceeds or nears budget");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+
+
     }
 
     private void showAddExpenseDialog() {
@@ -399,5 +417,10 @@ public class ExpenseSetting extends AppCompatActivity {
 
 
     }
+
+
+
+
+
 
 }
