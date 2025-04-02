@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -57,63 +56,3 @@
         android:minHeight="48dp"
         android:padding="12dp"/>
 </LinearLayout>
-=======
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
-
-    <EditText
-        android:id="@+id/editTextCategory"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="Category"
-        android:padding="12dp"/>
-
-    <EditText
-        android:id="@+id/editTextAmount"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="Amount"
-        android:inputType="numberDecimal"
-        android:padding="12dp"/>
-
-    <!-- Start Date chọn qua DatePicker -->
-    <TextView
-        android:id="@+id/textViewStartDate"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="Start Date (YYYY-MM-DD)"
-        android:background="@android:drawable/edit_text"
-        android:gravity="center_vertical"
-        android:padding="12dp"/>
-
-    <!-- End Date chọn qua DatePicker -->
-    <TextView
-        android:id="@+id/textViewEndDate"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="End Date (YYYY-MM-DD)"
-        android:background="@android:drawable/edit_text"
-        android:gravity="center_vertical"
-        android:padding="12dp"/>
-
-    <Spinner
-        android:id="@+id/spinnerFrequency"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:entries="@array/frequency_options"
-        android:padding="12dp"/>
-
-    <Button
-        android:id="@+id/buttonAddExpense"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Add Recurring Expense"
-        android:minHeight="48dp"
-        android:padding="12dp"/>
-</LinearLayout>
-
