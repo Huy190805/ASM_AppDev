@@ -18,8 +18,9 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            android:title="Campus Expense Manager"
+            android:title="Admin Dashboard"
             android:titleTextColor="@android:color/white" />
+
 
         <!-- Welcome Message -->
         <TextView
