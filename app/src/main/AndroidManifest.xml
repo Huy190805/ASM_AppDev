@@ -42,6 +42,13 @@
         <activity
             android:name=".Register"
             android:exported="false" />
+
+        <activity
+            android:name=".FeedbackActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ViewFeedbackActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

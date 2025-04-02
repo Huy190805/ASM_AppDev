@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
+import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -71,7 +71,7 @@ public class MainActivity extends AppCompatActivity {
         btnExpenseSetting = findViewById(R.id.nav_btn_expense_setting);
         btnBudgetSetting = findViewById(R.id.nav_btn_budget_setting);
         btnProfile = findViewById(R.id.nav_btn_profile);
-        btnSettings = findViewById(R.id.nav_btn_settings);
+        btnSettings = findViewById(R.id.btn_feedback);
         btnLogout = findViewById(R.id.nav_btn_logout);
 
         // Expense Setting → AddExpenseActivity
@@ -110,6 +110,15 @@ public class MainActivity extends AppCompatActivity {
             sendBudgetNotification("food", "⚠️ You’ve used 90% of your Food budget!");
         });
 
+        Log.d("SharedExpense", "Calling applySharedExpenses for " + currentUsername);
+        SharedExpenseManager.applySharedExpenses(currentUsername);
+
+        Button btnFeedback = findViewById(R.id.btn_feedback);
+        btnFeedback.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, FeedbackActivity.class);
+            intent.putExtra("username", currentUsername);
+            startActivity(intent);
+        });
 
         checkCategoryNotifications();
 
@@ -352,6 +361,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
 
 

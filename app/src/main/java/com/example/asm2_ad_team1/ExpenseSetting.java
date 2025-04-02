@@ -232,8 +232,9 @@ public class ExpenseSetting extends AppCompatActivity {
 
                     DatabaseReference expenseRef = mDatabase.child(currentUsername).child("expenses").child(expenseId);
                     expenseRef.get().addOnSuccessListener(snapshot -> {
-                        // Check if this expense has a recurringId tag
+                        // Check for recurringId or sharedId
                         String recurringId = snapshot.child("recurringId").getValue(String.class);
+                        String sharedId = snapshot.child("sharedId").getValue(String.class);
 
                         // Remove the expense
                         expenseRef.removeValue().addOnCompleteListener(task -> {
@@ -245,10 +246,15 @@ public class ExpenseSetting extends AppCompatActivity {
                             }
                         });
 
-                        // If it was tied to a recurring expense, also delete the recurring rule
+                        // Optional: remove recurring rule if present
                         if (recurringId != null && !recurringId.isEmpty()) {
                             mDatabase.child(currentUsername).child("recurring_expenses").child(recurringId).removeValue()
                                     .addOnSuccessListener(unused -> Toast.makeText(this, "Recurring rule removed", Toast.LENGTH_SHORT).show());
+                        }
+
+                        // ✅ Mark sharedId as deleted so it doesn't reappear
+                        if (sharedId != null && !sharedId.isEmpty()) {
+                            mDatabase.child(currentUsername).child("deleted_shared_expenses").child(sharedId).setValue(true);
                         }
                     });
                 })
