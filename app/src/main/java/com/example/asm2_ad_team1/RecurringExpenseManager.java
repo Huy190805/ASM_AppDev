@@ -70,4 +70,24 @@ public class RecurringExpenseManager {
         return currentMonth.compareTo(startDate.substring(0, 7)) >= 0 &&
                 currentMonth.compareTo(endDate.substring(0, 7)) <= 0;
     }
+
+    public static void addRecurringExpense(String username, String category, double amount,
+                                           String startDate, String endDate, String frequency) {
+        DatabaseReference ref = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(username)
+                .child("recurring_expenses")
+                .push();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("description", category); // Optional: store separately
+        data.put("category", category.toLowerCase());
+        data.put("amount", (int) amount);
+        data.put("startDate", startDate);
+        data.put("endDate", endDate);
+        data.put("frequency", frequency);
+
+        ref.setValue(data);
+    }
+
 }
