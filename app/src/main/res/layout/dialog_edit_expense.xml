@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -43,3 +44,50 @@
         android:layout_height="60dp"
         android:layout_marginTop="12dp" />
 </LinearLayout>
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Spinner to select existing expense -->
+    <Spinner
+        android:id="@+id/spinner_existing_expenses"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Editable fields -->
+    <EditText
+        android:id="@+id/edit_expense_description"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:hint="New Description"
+        android:inputType="text" />
+
+    <EditText
+        android:id="@+id/edit_expense_date"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:hint="New Date (YYYY-MM-DD)"
+        android:focusable="false"
+        android:clickable="true"
+        android:layout_marginTop="12dp" />
+
+    <EditText
+        android:id="@+id/edit_expense_amount"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:hint="New Amount"
+        android:inputType="number"
+        android:layout_marginTop="12dp" />
+
+    <Spinner
+        android:id="@+id/edit_expense_category"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="12dp" />
+</LinearLayout>
+

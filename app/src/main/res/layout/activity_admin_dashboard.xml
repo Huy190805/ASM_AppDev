@@ -37,10 +37,34 @@
                 android:paddingBottom="16dp" />
 
             <Button
+                android:id="@+id/btn_add_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add New User"
+                android:layout_marginTop="10dp" />
+            <Button
+                android:id="@+id/btn_edit_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Edit User"
+                android:layout_marginTop="10dp" />
+            <Button
+                android:id="@+id/btn_delete_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Delete User"
+                android:layout_marginTop="10dp" />
+
+
+
+
+
+            <Button
                 android:id="@+id/btn_manage_users"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Manage Users" />
+
 
             <Button
                 android:id="@+id/btn_view_reports"
