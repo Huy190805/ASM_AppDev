@@ -24,10 +24,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:columnCount="2"
-            android:rowCount="2"
             android:alignmentMode="alignMargins"
             android:columnOrderPreserved="false"
-            android:rowOrderPreserved="false"
             android:layout_marginBottom="20dp"
             android:layout_gravity="center">
 
@@ -68,7 +66,7 @@
                 android:padding="8dp" />
         </GridLayout>
 
-        <!-- Pie Chart -->
+        <!-- Breakdown -->
         <TextView
             android:id="@+id/tv_category_breakdown"
             android:layout_width="match_parent"
@@ -77,7 +75,5 @@
             android:textSize="16sp"
             android:paddingTop="10dp"
             android:paddingBottom="10dp" />
-
-
     </LinearLayout>
 </ScrollView>

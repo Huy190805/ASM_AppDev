@@ -22,4 +22,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Asm2_AD_Team1"
 include(":app")
- 

@@ -2,8 +2,14 @@ package com.example.asm2_ad_team1;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.os.Build;
+import android.content.Intent;
+
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +24,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,6 +35,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -35,7 +45,7 @@ import java.util.UUID;
 public class ExpenseSetting extends AppCompatActivity {
 
     private LinearLayout expenseContainer;
-    private Button btnAddExpense, btnEditExpense, btnDeleteExpense;
+    private Button btnAddExpense, btnEditExpense, btnDeleteExpense, btnAddRecurringExpense;
     private TextView btnBack;
     private String currentUsername;
     private DatabaseReference mDatabase;
@@ -60,10 +70,12 @@ public class ExpenseSetting extends AppCompatActivity {
         btnEditExpense = findViewById(R.id.btn_edit_expense);
         btnDeleteExpense = findViewById(R.id.btn_delete_expense);
         btnBack = findViewById(R.id.btn_back);
+        btnAddRecurringExpense = findViewById(R.id.btn_addrecurring_expense);
 
         btnAddExpense.setOnClickListener(v -> showAddExpenseDialog());
         btnEditExpense.setOnClickListener(v -> showEditExpenseDialog());
         btnDeleteExpense.setOnClickListener(v -> showDeleteExpenseDialog());
+        btnAddRecurringExpense.setOnClickListener(view -> showAddRecurringExpenseDialog());
 
         btnBack.setOnClickListener(v -> {
             Intent intent = new Intent(ExpenseSetting.this, MainActivity.class);
@@ -73,6 +85,16 @@ public class ExpenseSetting extends AppCompatActivity {
         });
 
         loadExpenses();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    "expense_alerts", "Expense Alerts", NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("Notifies when a category exceeds or nears budget");
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+
+
     }
 
     private void showAddExpenseDialog() {
@@ -187,26 +209,48 @@ public class ExpenseSetting extends AppCompatActivity {
     }
 
     private void showDeleteExpenseDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_delete_expense, null);
-        Spinner spinner = dialogView.findViewById(R.id.spinner_delete_expense);
+        View view = getLayoutInflater().inflate(R.layout.dialog_delete_expense, null);
+        Spinner spinner = view.findViewById(R.id.spinner_delete_expense);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new ArrayList<>(expenseIdMap.keySet()));
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                android.R.layout.simple_spinner_item,
+                new ArrayList<>(expenseIdMap.keySet()));
         spinner.setAdapter(adapter);
 
         new AlertDialog.Builder(this)
                 .setTitle("Delete Expense")
-                .setView(dialogView)
+                .setView(view)
                 .setPositiveButton("Delete", (dialog, which) -> {
                     String selected = (String) spinner.getSelectedItem();
                     String expenseId = expenseIdMap.get(selected);
-                    if (expenseId == null) return;
 
-                    mDatabase.child(currentUsername).child("expenses").child(expenseId).removeValue()
-                            .addOnCompleteListener(t -> {
+                    if (expenseId == null) {
+                        Toast.makeText(this, "Invalid selection", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    DatabaseReference expenseRef = mDatabase.child(currentUsername).child("expenses").child(expenseId);
+                    expenseRef.get().addOnSuccessListener(snapshot -> {
+                        // Check if this expense has a recurringId tag
+                        String recurringId = snapshot.child("recurringId").getValue(String.class);
+
+                        // Remove the expense
+                        expenseRef.removeValue().addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
                                 Toast.makeText(this, "Expense deleted", Toast.LENGTH_SHORT).show();
-                                expenseContainer.removeAllViews();
                                 loadExpenses();
-                            });
+                            } else {
+                                Toast.makeText(this, "Failed to delete", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                        // If it was tied to a recurring expense, also delete the recurring rule
+                        if (recurringId != null && !recurringId.isEmpty()) {
+                            mDatabase.child(currentUsername).child("recurring_expenses").child(recurringId).removeValue()
+                                    .addOnSuccessListener(unused -> Toast.makeText(this, "Recurring rule removed", Toast.LENGTH_SHORT).show());
+                        }
+                    });
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
@@ -293,4 +337,90 @@ public class ExpenseSetting extends AppCompatActivity {
         if (text == null || text.isEmpty()) return text;
         return text.substring(0, 1).toUpperCase() + text.substring(1).toLowerCase();
     }
+
+    private void showAddRecurringExpenseDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_recurring_expense, null);
+
+        EditText edtDesc = view.findViewById(R.id.input_recurring_description);
+        EditText edtAmt = view.findViewById(R.id.input_recurring_amount);
+        EditText edtStart = view.findViewById(R.id.input_start_date);
+        EditText edtEnd = view.findViewById(R.id.input_end_date);
+        Spinner spinnerCategory = view.findViewById(R.id.spinner_recurring_category);
+        Spinner spinnerFrequency = view.findViewById(R.id.spinner_frequency);
+
+        // Category Spinner
+        ArrayAdapter<CharSequence> catAdapter = ArrayAdapter.createFromResource(this,
+                R.array.expense_categories, android.R.layout.simple_spinner_item);
+        catAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerCategory.setAdapter(catAdapter);
+
+        // Frequency Spinner
+        ArrayAdapter<String> freqAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item,
+                Arrays.asList("monthly")); // Can add weekly, etc.
+        freqAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFrequency.setAdapter(freqAdapter);
+
+        // DatePickers
+        edtStart.setOnClickListener(v -> showDatePicker(edtStart));
+        edtEnd.setOnClickListener(v -> showDatePicker(edtEnd));
+
+        new AlertDialog.Builder(this)
+                .setTitle("Add Recurring Expense")
+                .setView(view)
+                .setPositiveButton("Add", (dialog, which) -> {
+                    String desc = edtDesc.getText().toString().trim();
+                    String amtStr = edtAmt.getText().toString().trim();
+                    String startDate = edtStart.getText().toString().trim();
+                    String endDate = edtEnd.getText().toString().trim();
+                    String category = spinnerCategory.getSelectedItem().toString().toLowerCase();
+                    String frequency = spinnerFrequency.getSelectedItem().toString();
+
+                    if (desc.isEmpty() || amtStr.isEmpty() || startDate.isEmpty() || endDate.isEmpty()) {
+                        Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    try {
+                        int amount = Integer.parseInt(amtStr);
+                        String id = UUID.randomUUID().toString();
+
+                        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users")
+                                .child(currentUsername).child("recurring_expenses").child(id);
+
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("description", desc);
+                        data.put("amount", amount);
+                        data.put("category", category);
+                        data.put("startDate", startDate);
+                        data.put("endDate", endDate);
+                        data.put("frequency", frequency);
+
+                        ref.setValue(data).addOnCompleteListener(t -> {
+                            if (t.isSuccessful()) {
+                                Toast.makeText(this, "Recurring expense saved!", Toast.LENGTH_SHORT).show();
+                                RecurringExpenseManager.applyRecurringExpenses(currentUsername);
+
+                                new Handler().postDelayed(this::loadExpenses, 1000);
+                            } else {
+                                Toast.makeText(this, "Error: " + t.getException(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    } catch (NumberFormatException e) {
+                        Toast.makeText(this, "Invalid amount", Toast.LENGTH_SHORT).show();
+                    }
+                })
+
+                .setNegativeButton("Cancel", null)
+
+                .show();
+
+
+    }
+
+
+
+
+
+
 }

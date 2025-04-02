@@ -6,22 +6,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!--  Main Content Area -->
+    <!-- Main Content Area -->
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!--  Top App Bar -->
+        <!-- Top App Bar -->
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            android:title="Campus Expense Manager"
+            android:title="Admin Dashboard"
             android:titleTextColor="@android:color/white" />
 
-        <!--  Welcome Message -->
+
+        <!-- Welcome Message -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -30,6 +31,7 @@
             android:textSize="20sp"
             android:layout_marginTop="32dp"/>
 
+        <!-- Overview Section -->
         <LinearLayout
             android:id="@+id/overview_section"
             android:layout_width="match_parent"
@@ -65,10 +67,23 @@
                 android:layout_marginTop="8dp" />
         </LinearLayout>
 
+        <!-- Report Button -->
+        <Button
+            android:id="@+id/btn_generate_report"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Generate Monthly Report" />
+
+        <!-- Optional: Test Notification Button -->
+        <Button
+            android:id="@+id/btn_test_notification"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Send Test Notification" />
     </LinearLayout>
 
-
-    <!--  Side Navigation Drawer -->
+    <!-- Side Navigation Drawer -->
     <LinearLayout
         android:id="@+id/nav_view"
         android:layout_width="280dp"
@@ -120,6 +135,4 @@
             android:text="Logout"
             android:layout_marginTop="10dp" />
     </LinearLayout>
-
-
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -5,7 +5,7 @@
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Spinner to select existing expense (can be replaced with AutoComplete or ListView) -->
+    <!-- Spinner to select existing expense -->
     <Spinner
         android:id="@+id/spinner_existing_expenses"
         android:layout_width="match_parent"

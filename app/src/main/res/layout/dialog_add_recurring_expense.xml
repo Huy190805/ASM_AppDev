@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/input_recurring_description"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:hint="Description" />
+
+    <EditText
+        android:id="@+id/input_recurring_amount"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:hint="Amount"
+        android:inputType="number" />
+
+    <Spinner
+        android:id="@+id/spinner_recurring_category"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="8dp" />
+
+    <EditText
+        android:id="@+id/input_start_date"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="Start Date (yyyy-MM-dd)" />
+
+    <EditText
+        android:id="@+id/input_end_date"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:focusable="false"
+        android:hint="End Date (yyyy-MM-dd)" />
+
+    <Spinner
+        android:id="@+id/spinner_frequency"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_marginTop="8dp" />
+</LinearLayout>

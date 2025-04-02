@@ -96,9 +96,18 @@ public class Login extends AppCompatActivity {
                 if (snapshot.exists()) {
                     String passwordFromDB = snapshot.child("password").getValue(String.class);
                     if (passwordFromDB != null && passwordFromDB.equals(hashedInputPassword)) {
-                        // Firebase login success
-                        Toast.makeText(Login.this, "Login successful (Firebase)", Toast.LENGTH_SHORT).show();
-                        proceedToMain(username);
+                        // ✅ Role-based redirect
+                        String role = snapshot.child("role").getValue(String.class);
+                        if (role != null && role.equalsIgnoreCase("admin")) {
+                            Toast.makeText(Login.this, "Welcome admin!", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(Login.this, AdminDashboardActivity.class);
+                            intent.putExtra("username", username);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(Login.this, "Login successful (Firebase)", Toast.LENGTH_SHORT).show();
+                            proceedToMain(username);
+                        }
                     } else {
                         login_password.setError("Invalid credentials");
                         login_password.requestFocus();
@@ -142,9 +151,23 @@ public class Login extends AppCompatActivity {
     }
 
     private void proceedToMain(String username) {
-        Intent intent = new Intent(Login.this, MainActivity.class);
-        intent.putExtra("username", username);
-        startActivity(intent);
-        finish();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(username);
+        ref.child("role").get().addOnCompleteListener(task -> {
+            String role = "user"; // default
+            if (task.isSuccessful() && task.getResult().getValue() != null) {
+                role = task.getResult().getValue(String.class);
+            }
+
+            Intent intent;
+            if ("admin".equalsIgnoreCase(role)) {
+                intent = new Intent(Login.this, AdminDashboardActivity.class);
+            } else {
+                intent = new Intent(Login.this, MainActivity.class);
+            }
+
+            intent.putExtra("username", username);
+            startActivity(intent);
+            finish();
+        });
     }
 }
