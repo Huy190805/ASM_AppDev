@@ -2,6 +2,8 @@ package com.example.asm2_ad_team1;
 
 import android.util.Log;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
@@ -9,7 +11,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class RecurringExpenseManager {
+public class RecurringExpenseManager extends AppCompatActivity {
 
     public static void applyRecurringExpenses(String username) {
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(username);
