@@ -4,9 +4,11 @@
     <string-array name="expense_categories">
         <item>Food</item>
         <item>Transport</item>
-
+        <item>Water</item>
+        <item>Electricity</item>
         <item>Groceries</item>
         <item>Study</item>
+        <item>Holiday</item>
         <item>Other</item>
     </string-array>
 

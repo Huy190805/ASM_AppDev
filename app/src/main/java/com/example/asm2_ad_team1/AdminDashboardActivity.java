@@ -1,17 +1,14 @@
 package com.example.asm2_ad_team1;
 
-
 import android.app.AlertDialog;
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-
-import android.content.Intent;
-import android.os.Bundle;
-import android.widget.Button;
-
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,13 +16,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.util.UUID;
 
 public class AdminDashboardActivity extends AppCompatActivity {
 
@@ -34,11 +31,10 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
     private Button btnManageUsers, btnViewReports, btnLogout;
     private TextView tvWelcome;
-
     private Button btnAddUser;
     private Button btnEditUser;
     private Button btnDeleteUser;
-
+    private Button btnViewFeedback;
 
 
     @Override
@@ -56,7 +52,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
         tvWelcome.setText("Welcome, Admin: " + currentUsername);
 
 
-        btnViewReports = findViewById(R.id.btn_view_reports);
         btnLogout = findViewById(R.id.btn_admin_logout);
 
         btnAddUser = findViewById(R.id.btn_add_user);
@@ -68,18 +63,17 @@ public class AdminDashboardActivity extends AppCompatActivity {
         btnDeleteUser = findViewById(R.id.btn_delete_user);
         btnDeleteUser.setOnClickListener(v -> showDeleteUserDialog());
 
+        Button btnAddSharedExpense = findViewById(R.id.btn_add_shared_expense);
+        btnAddSharedExpense.setOnClickListener(v -> showAddSharedExpenseDialog());
+
+        btnViewFeedback = findViewById(R.id.btn_view_feedback);
+        btnViewFeedback = findViewById(R.id.btn_view_feedback);
+        btnViewFeedback.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ViewFeedbackActivity.class);
+            startActivity(intent);
+        });
 
 
-        btnManageUsers = findViewById(R.id.btn_manage_users);
-        btnViewReports = findViewById(R.id.btn_view_reports);
-        btnLogout = findViewById(R.id.btn_admin_logout);
-
-        btnManageUsers.setOnClickListener(v ->
-                Toast.makeText(this, "Manage Users (not implemented)", Toast.LENGTH_SHORT).show());
-
-
-        btnViewReports.setOnClickListener(v ->
-                Toast.makeText(this, "View Reports (not implemented)", Toast.LENGTH_SHORT).show());
 
         btnLogout.setOnClickListener(v -> {
             Toast.makeText(this, "Admin logged out", Toast.LENGTH_SHORT).show();
@@ -87,7 +81,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
             finish();
         });
     }
-
 
     private void showAddUserDialog() {
         View view = getLayoutInflater().inflate(R.layout.dialog_add_user, null);
@@ -227,6 +220,59 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void showAddSharedExpenseDialog() {
+        View view = getLayoutInflater().inflate(R.layout.dialog_add_expense, null);
+        EditText inputDescription = view.findViewById(R.id.input_expense_description);
+        EditText inputDate = view.findViewById(R.id.input_expense_date);
+        EditText inputAmount = view.findViewById(R.id.input_expense_amount);
+        Spinner categorySpinner = view.findViewById(R.id.spinner_expense_category);
 
+        // Load categories (you can customize the list)
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this, R.array.expense_categories, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categorySpinner.setAdapter(adapter);
+
+        inputDate.setOnClickListener(v -> {
+            Calendar calendar = Calendar.getInstance();
+            DatePickerDialog dialog = new DatePickerDialog(this, (view1, year, month, dayOfMonth) -> {
+                String date = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                inputDate.setText(date);
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+            dialog.show();
+        });
+
+        new AlertDialog.Builder(this)
+                .setTitle("Add Shared Expense")
+                .setView(view)
+                .setPositiveButton("Add", (dialog, which) -> {
+                    String desc = inputDescription.getText().toString().trim();
+                    String date = inputDate.getText().toString().trim();
+                    String category = categorySpinner.getSelectedItem().toString().toLowerCase();
+                    String amountStr = inputAmount.getText().toString().trim();
+
+                    if (desc.isEmpty() || date.isEmpty() || amountStr.isEmpty()) {
+                        Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    int amount = Integer.parseInt(amountStr);
+                    String sharedId = UUID.randomUUID().toString();
+
+                    Map<String, Object> expense = new HashMap<>();
+                    expense.put("description", desc + " (Shared)");
+                    expense.put("amount", amount);
+                    expense.put("category", category);
+                    expense.put("date", date);
+                    expense.put("sharedId", sharedId);
+
+                    FirebaseDatabase.getInstance().getReference("shared_expenses")
+                            .child(sharedId).setValue(expense)
+                            .addOnSuccessListener(unused -> Toast.makeText(this, "Shared expense added", Toast.LENGTH_SHORT).show())
+                            .addOnFailureListener(e -> Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
 
 }
